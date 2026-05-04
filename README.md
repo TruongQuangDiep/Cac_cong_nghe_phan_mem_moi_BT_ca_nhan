@@ -8,6 +8,7 @@
 ## Cấu trúc thư mục (Simplified)
 Để dễ theo dõi, đây là cấu trúc các file chính trong thư mục `src`:
 
+```text
 src/
 ├── config/             # Cấu hình Database & View Engine
 ├── controller/         # Điều hướng request và gọi Service
