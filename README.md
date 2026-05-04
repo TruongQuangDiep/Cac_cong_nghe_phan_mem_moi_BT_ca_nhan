@@ -2,6 +2,7 @@
 
 ## Thông tin sinh viên
 * **Họ và tên:** Trương Quang Điệp
+* **MSSV:** 23110205
 * **Môn học:** Công nghệ phần mềm mới (MTSE431179)
 * **Công nghệ sử dụng:** `Node.js`, `Express`, `Sequelize`, `MySQL`, `EJS`
 
