@@ -1,0 +1,19 @@
+# Dependency folders
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+
+# Build folders
+dist/
+build/
+
+# Environment variables (Bảo mật)
+.env
+
+# Local assets (Nếu không muốn nộp ảnh rác)
+backend/assets/*
+!backend/assets/.gitkeep
+
+# OS generated files
+.DS_Store
+Thumbs.db
