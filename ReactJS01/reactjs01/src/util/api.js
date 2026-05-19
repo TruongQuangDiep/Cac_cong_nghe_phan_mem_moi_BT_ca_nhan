@@ -84,13 +84,18 @@ const updateProfileApi = (
     );
 };
 
+// 🔥 ĐÃ NÂNG CẤP: Thêm minPrice, maxPrice, sort vào URL API
 const getProductsApi = (
     search = "",
-    category = ""
+    category = "",
+    minPrice = "",
+    maxPrice = "",
+    sort = "",
+    page = 1,
+    limit = 12
 ) => {
-
     return axios.get(
-        `/v1/api/products?search=${search}&category=${category}`
+        `/v1/api/products?search=${search}&category=${category}&minPrice=${minPrice}&maxPrice=${maxPrice}&sort=${sort}`
     );
 };
 

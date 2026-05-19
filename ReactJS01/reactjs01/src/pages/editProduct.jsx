@@ -1,9 +1,4 @@
-import {
-    useEffect,
-    useState
-}
-from "react";
-
+import { useEffect, useState } from "react";
 import {
     Form,
     Input,
@@ -12,55 +7,33 @@ import {
     Upload,
     notification,
     Select
-}
-from "antd";
-
-import {
-    PlusOutlined
-}
-from "@ant-design/icons";
-
-import {
-    useParams
-}
-from "react-router-dom";
-
+} from "antd";
+import { PlusOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { useParams, Link } from "react-router-dom";
 import {
     getProductDetailApi,
     updateProductApi,
     getCategoriesApi
-}
-from "../util/api";
+} from "../util/api";
 
-const BACKEND_URL =
-    import.meta.env.VITE_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const EditProductPage = () => {
-
     const { id } = useParams();
-
     const [form] = Form.useForm();
-
     const [fileList, setFileList] = useState([]);
-
     const [loading, setLoading] = useState(false);
-
     const [categories, setCategories] = useState([]);
 
     // ================= LOAD =================
     useEffect(() => {
-
         const fetchData = async () => {
-
             // load product
-            const product =
-                await getProductDetailApi(id);
-
+            const product = await getProductDetailApi(id);
             if (product) {
-
                 form.setFieldsValue({
                     ...product,
-                    category: product.category
+                    category: product.category?._id
                 });
 
                 const oldImages =
@@ -76,24 +49,18 @@ const EditProductPage = () => {
             }
 
             // load categories
-            const categoryRes =
-                await getCategoriesApi();
-
+            const categoryRes = await getCategoriesApi();
             if (Array.isArray(categoryRes)) {
                 setCategories(categoryRes);
             }
         };
 
         fetchData();
-
-    }, [id]);
+    }, [id, form]);
 
     // ================= UPLOAD =================
     const beforeUpload = (file) => {
-
-        const preview =
-            URL.createObjectURL(file);
-
+        const preview = URL.createObjectURL(file);
         setFileList((prev) => [
             ...prev,
             {
@@ -104,242 +71,200 @@ const EditProductPage = () => {
                 url: preview
             }
         ]);
-
         return false;
     };
 
     // ================= REMOVE =================
     const handleRemove = (file) => {
-
-        setFileList((prev) =>
-            prev.filter(item => item.uid !== file.uid)
-        );
+        setFileList((prev) => prev.filter(item => item.uid !== file.uid));
     };
 
     // ================= SUBMIT =================
     const onFinish = async (values) => {
-
         try {
-
             setLoading(true);
-
             const formData = new FormData();
 
             formData.append("name", values.name);
+            formData.append("price", values.price);
+            formData.append("category", values.category);
+            formData.append("stock", values.stock);
 
-            formData.append(
-                "price",
-                values.price
-            );
+            if (values.oldPrice !== undefined && values.oldPrice !== null) {
+                formData.append("oldPrice", values.oldPrice);
+            }
 
-            formData.append(
-                "oldPrice",
-                values.oldPrice
-            );
-
-            formData.append(
-                "category",
-                values.category
-            );
-
-            formData.append(
-                "stock",
-                values.stock
-            );
-
-            formData.append(
-                "description",
-                values.description
-            );
+            if (values.description !== undefined && values.description !== null) {
+                formData.append("description", values.description);
+            }
 
             // giữ ảnh cũ
-            const oldImages =
-                fileList
-                    .filter(item => item.oldImage)
-                    .map(item => item.oldImage);
+            const oldImages = fileList
+                .filter(item => item.oldImage)
+                .map(item => item.oldImage);
 
-            formData.append(
-                "oldImages",
-                JSON.stringify(oldImages)
-            );
+            formData.append("oldImages", JSON.stringify(oldImages));
 
             // thêm ảnh mới
             fileList.forEach((item) => {
-
                 if (item.originFileObj) {
-
-                    formData.append(
-                        "images",
-                        item.originFileObj
-                    );
+                    formData.append("images", item.originFileObj);
                 }
             });
 
-            const res =
-                await updateProductApi(
-                    id,
-                    formData
-                );
+            const res = await updateProductApi(id, formData);
 
             if (res?.errCode === 0) {
-
                 notification.success({
                     message: "Update success"
                 });
-
             } else {
-
                 notification.error({
                     message: "Update failed"
                 });
             }
-
         } catch (err) {
-
             console.log(err);
-
             notification.error({
                 message: "Server error"
             });
-
         } finally {
-
             setLoading(false);
         }
     };
 
     return (
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            
+            {/* Tiêu đề & Nút Back */}
+            <div className="flex items-center gap-4 mb-6">
+                <Link to="/admin/products" className="text-gray-500 hover:text-blue-600 transition">
+                    <ArrowLeftOutlined className="text-xl" />
+                </Link>
+                <h1 className="text-2xl font-bold text-gray-800">Edit Product</h1>
+            </div>
 
-        <div className="p-6">
-
-            <h1 className="mb-5 text-2xl font-bold">Edit Product</h1>
-
-            <Form
-                form={form}
-                layout="vertical"
-                onFinish={onFinish}
-            >
-
-                <Form.Item
-                    label="Name"
-                    name="name"
-                    rules={[
-                        {
-                            required: true,
-                            message: "Please input product name"
-                        }
-                    ]}
+            {/* Bọc Form trong Card trắng */}
+            <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100">
+                <Form
+                    form={form}
+                    layout="vertical"
+                    onFinish={onFinish}
+                    requiredMark={false}
                 >
-                    <Input />
-                </Form.Item>
-
-                <Form.Item
-                    label="Price"
-                    name="price"
-                    rules={[
-                        {
-                            required: true,
-                            message: "Please input price"
-                        }
-                    ]}
-                >
-                    <InputNumber
-                        className="w-full"
-                    />
-                </Form.Item>
-
-                <Form.Item
-                    label="Old Price"
-                    name="oldPrice"
-                >
-                    <InputNumber
-                        className="w-full"
-                    />
-                </Form.Item>
-
-                <Form.Item
-                    label="Category"
-                    name="category"
-                    rules={[
-                        {
-                            required: true,
-                            message: "Please choose category"
-                        }
-                    ]}
-                >
-
-                    <Select
-                        showSearch
-                        placeholder="Choose category"
-                        className="w-full"
-                        optionFilterProp="children"
+                    <Form.Item
+                        label={<span className="font-medium text-gray-700">Product Name</span>}
+                        name="name"
+                        rules={[{ required: true, message: "Please input product name" }]}
                     >
+                        <Input size="large" className="rounded-lg" placeholder="Enter product name" />
+                    </Form.Item>
 
-                        {categories.map((item) => (
+                    {/* Chia Grid 3 cột cho Giá và Kho */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6">
+                        <Form.Item
+                            label={<span className="font-medium text-gray-700">Price (VND)</span>}
+                            name="price"
+                            rules={[
+                                { required: true, message: 'Vui lòng nhập giá!' },
+                                // Thêm rule chặn số âm báo lỗi đỏ:
+                                { type: 'number', min: 0, message: 'Giá không được là số âm!' }
+                            ]}
+                        >
+                            {/* THÊM min={0} VÀO ĐÂY */}
+                            <InputNumber size="large" style={{ width: '100%' }} className="rounded-lg" placeholder="0" />
+                        </Form.Item>
 
-                            <Select.Option
-                                key={item._id}
-                                value={item.name}
+                        <Form.Item
+                            label={<span className="font-medium text-gray-700">Old Price (Optional)</span>}
+                            name="oldPrice"
+                            rules={[
+                                // Không có required, chỉ có chặn số âm:
+                                { type: 'number', min: 0, message: 'Giá cũ không được là số âm!' }
+                            ]}
+                        >
+                            {/* THÊM min={0} VÀO ĐÂY */}
+                            <InputNumber size="large" style={{ width: '100%' }} className="rounded-lg" placeholder="0" />
+                        </Form.Item>
+
+                        <Form.Item
+                            label={<span className="font-medium text-gray-700">Stock</span>}
+                            name="stock"
+                            rules={[
+                                    { required: true, message: 'Vui lòng nhập số lượng!' },
+                                    // Thêm rule chặn số âm báo lỗi đỏ:
+                                    { type: 'number', min: 0, message: 'Số lượng kho không được âm!' }
+                                ]}
                             >
-                                {item.name}
-                            </Select.Option>
+                            {/* THÊM min={0} VÀO ĐÂY */}
+                            <InputNumber size="large" style={{ width: '100%' }} className="rounded-lg" placeholder="0" />
+                        </Form.Item>
+                    </div>
 
-                        ))}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+                        <Form.Item
+                            label={<span className="font-medium text-gray-700">Category</span>}
+                            name="category"
+                            rules={[{ required: true, message: "Please choose category" }]}
+                        >
+                            <Select
+                                size="large"
+                                showSearch
+                                placeholder="Choose category"
+                                className="w-full"
+                                optionFilterProp="children"
+                                getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                            >
+                                {categories.map((item) => (
+                                    <Select.Option key={item._id} value={item._id}>
+                                        {item.name}
+                                    </Select.Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
+                    </div>
 
-                    </Select>
+                    <Form.Item label={<span className="font-medium text-gray-700">Images</span>}>
+                        <Upload
+                            listType="picture-card"
+                            multiple
+                            fileList={fileList}
+                            beforeUpload={beforeUpload}
+                            onRemove={handleRemove}
+                        >
+                            <div className="flex flex-col items-center justify-center text-gray-500 hover:text-blue-500 transition">
+                                <PlusOutlined className="text-xl mb-2" />
+                                <div className="text-sm">Upload</div>
+                            </div>
+                        </Upload>
+                    </Form.Item>
 
-                </Form.Item>
-
-                <Form.Item
-                    label="Stock"
-                    name="stock"
-                    rules={[
-                        {
-                            required: true,
-                            message: "Please input stock"
-                        }
-                    ]}
-                >
-                    <InputNumber
-                        className="w-full"
-                    />
-                </Form.Item>
-
-                <Form.Item label="Images">
-
-                    <Upload
-                        listType="picture-card"
-                        multiple
-                        fileList={fileList}
-                        beforeUpload={beforeUpload}
-                        onRemove={handleRemove}
+                    <Form.Item
+                        label={<span className="font-medium text-gray-700">Description</span>}
+                        name="description"
                     >
-                        <div>
-                            <PlusOutlined />
-                            <div>Add</div>
-                        </div>
-                    </Upload>
+                        <Input.TextArea 
+                            size="large" 
+                            rows={5} 
+                            placeholder="Write a detailed product description..."
+                            className="rounded-lg"
+                        />
+                    </Form.Item>
 
-                </Form.Item>
-
-                <Form.Item
-                    label="Description"
-                    name="description"
-                >
-                    <Input.TextArea rows={5} />
-                </Form.Item>
-
-                <Button
-                    type="primary"
-                    htmlType="submit"
-                    loading={loading}
-                    block
-                >
-                    Update
-                </Button>
-
-            </Form>
-
+                    {/* Đường phân cách & Nút Submit */}
+                    <div className="border-t border-gray-100 pt-6 mt-2 flex justify-end">
+                        <Button
+                            type="primary"
+                            htmlType="submit"
+                            loading={loading}
+                            size="large"
+                            className="px-8 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium"
+                        >
+                            Update Product
+                        </Button>
+                    </div>
+                </Form>
+            </div>
         </div>
     );
 };

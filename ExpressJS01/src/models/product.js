@@ -2,19 +2,35 @@ import mongoose from "mongoose";
 
 const productSchema = new mongoose.Schema(
 {
-    name: String,
-
-    price: Number,
-
-    oldPrice: Number,
+    name: { type: String, required: true },
+    price: { 
+        type: Number, 
+        required: true,
+        min: [0, 'Giá sản phẩm không được là số âm!'] // Backend tự chặn nếu có ai cố tình gửi số âm
+    },
+    oldPrice: { 
+        type: Number, 
+        min: [0, 'Giá cũ không được là số âm!']
+    },
+    stock: { 
+        type: Number, 
+        required: true,
+        min: [0, 'Số lượng kho không được âm!'] 
+    },
 
     description: String,
 
-    category: String,
-
-    stock: Number,
+    category: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category"
+    },
 
     sold: {
+        type: Number,
+        default: 0
+    },
+
+    views: {
         type: Number,
         default: 0
     },

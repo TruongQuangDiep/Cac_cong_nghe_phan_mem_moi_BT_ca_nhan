@@ -133,7 +133,7 @@ const ProductDetailPage = () => {
                             w-fit
                         "
                     >
-                        {product.category}
+                        {product.category?.name}
                     </div>
 
                     {/* NAME */}
