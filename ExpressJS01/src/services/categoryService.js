@@ -1,6 +1,5 @@
 import Category from "../models/category.js";
 
-// ================= GET =================
 export const getCategoriesService = async () => {
 
     try {
@@ -19,7 +18,6 @@ export const getCategoriesService = async () => {
     }
 };
 
-// ================= CREATE =================
 export const createCategoryService = async (data) => {
 
     try {
@@ -55,7 +53,6 @@ export const createCategoryService = async (data) => {
     }
 };
 
-// ================= UPDATE =================
 export const updateCategoryService = async (
     id,
     data
@@ -86,7 +83,6 @@ export const updateCategoryService = async (
     }
 };
 
-// ================= DELETE =================
 export const deleteCategoryService = async (id) => {
 
     try {

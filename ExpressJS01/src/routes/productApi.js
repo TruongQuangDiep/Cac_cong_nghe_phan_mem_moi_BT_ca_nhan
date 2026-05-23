@@ -15,12 +15,10 @@ from "../controllers/productController.js";
 
 const routerProduct = express.Router();
 
-// PUBLIC APIs
 routerProduct.get("/products", getProducts);
 
 routerProduct.get("/products/:id", getProductDetail);
 
-// ADMIN APIs
 routerProduct.post(
     "/products",
     auth,

@@ -5,7 +5,7 @@ const delay = (req, res, next) => {
             console.log(">>> check token: ", token);
         }
         next();
-    }, 3000); // Trễ 3 giây
+    }, 3000); 
 }
 
 export default delay;

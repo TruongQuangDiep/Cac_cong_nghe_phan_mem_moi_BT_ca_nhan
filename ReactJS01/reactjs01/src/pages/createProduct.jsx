@@ -27,7 +27,6 @@ const CreateProductPage = () => {
         fetchCategories();
     }, []);
 
-    // ================= UPLOAD =================
     const beforeUpload = (file) => {
         const preview = URL.createObjectURL(file);
         setFileList((prev) => [
@@ -43,18 +42,15 @@ const CreateProductPage = () => {
         return false;
     };
 
-    // ================= REMOVE =================
     const handleRemove = (file) => {
         setFileList((prev) => prev.filter(item => item.uid !== file.uid));
     };
 
-    // ================= RESET =================
     const resetAll = () => {
         form.resetFields();
         setFileList([]);
     };
 
-    // ================= SUBMIT =================
     const onFinish = async (values) => {
         try {
             setLoading(true);
@@ -126,7 +122,7 @@ const CreateProductPage = () => {
                             name="price"
                             rules={[
                                 { required: true, message: 'Vui lòng nhập giá!' },
-                                // Thêm rule chặn số âm báo lỗi đỏ:
+
                                 { type: 'number', min: 0, message: 'Giá không được là số âm!' }
                             ]}
                         >
@@ -170,7 +166,7 @@ const CreateProductPage = () => {
                                 size="large"
                                 placeholder="Choose category"
                                 className="w-full"
-                                getPopupContainer={(triggerNode) => triggerNode.parentNode} // Tránh lỗi vỡ layout
+                                getPopupContainer={(triggerNode) => triggerNode.parentNode} 
                             >
                                 {categories.map((item) => (
                                     <Select.Option key={item._id} value={item._id}>

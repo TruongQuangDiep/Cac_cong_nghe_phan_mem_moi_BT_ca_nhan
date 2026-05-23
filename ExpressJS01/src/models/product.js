@@ -6,7 +6,7 @@ const productSchema = new mongoose.Schema(
     price: { 
         type: Number, 
         required: true,
-        min: [0, 'Giá sản phẩm không được là số âm!'] // Backend tự chặn nếu có ai cố tình gửi số âm
+        min: [0, 'Giá sản phẩm không được là số âm!'] 
     },
     oldPrice: { 
         type: Number, 

@@ -1,88 +1,73 @@
-import { useContext } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { HomeOutlined, ShoppingCartOutlined, UserOutlined, AppstoreOutlined } from "@ant-design/icons";
-import { AuthContext } from "../context/auth.context";
+import { Link } from "react-router-dom";
+import { ShoppingCartOutlined } from "@ant-design/icons";
 
-const Header = () => {
-    const location = useLocation();
-    const navigate = useNavigate();
-    const { auth, setAuth } = useContext(AuthContext);
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-    const logout = () => {
-        localStorage.removeItem("access_token");
-        setAuth({
-            isAuthenticated: false,
-            user: { email: "", name: "", role: "", avatar: "" }
-        });
-        navigate("/login");
-    };
-
-    const isActive = (path) => {
-        return location.pathname === path;
-    };
+const ProductCard = ({ product }) => {
+    const image = product?.images?.[0]
+        ? `${BACKEND_URL}${product.images[0]}`
+        : "https://via.placeholder.com/300";
 
     return (
-        <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md shadow-sm border-b w-full">
-            {/* THÊM CONTAINER Ở ĐÂY: Giới hạn độ rộng và căn giữa nội dung Header */}
-            <div className="max-w-screen-xl mx-auto w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                
-                {/* LEFT */}
-                <div className="flex items-center gap-8">
-                    <Link to="/" className="text-2xl font-bold text-blue-600">
-                        DShop
-                    </Link>
-                    <nav className="hidden md:flex items-center gap-6">
-                        <Link
-                            to="/"
-                            className={`flex items-center gap-2 font-medium transition hover:text-blue-600 ${isActive("/") ? "text-blue-600" : "text-gray-700"}`}
-                        >
-                            <HomeOutlined /> Home
-                        </Link>
-                        {auth?.user?.role === "Admin" && (
-                            <>
-                                <Link
-                                    to="/admin/products"
-                                    className={`flex items-center gap-2 font-medium transition hover:text-blue-600 ${isActive("/admin/products") ? "text-blue-600" : "text-gray-700"}`}
-                                >
-                                    <ShoppingCartOutlined /> Products
-                                </Link>
-                                <Link
-                                    to="/admin/categories"
-                                    className={`flex items-center gap-2 font-medium transition hover:text-blue-600 ${isActive("/admin/categories") ? "text-blue-600" : "text-gray-700"}`}
-                                >
-                                    <AppstoreOutlined /> Categories
-                                </Link>
-                            </>
-                        )}
-                    </nav>
+        <Link
+            to={`/product/${product._id}`}
+            className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:-translate-y-1 flex flex-col"
+        >
+            <div className="relative overflow-hidden">
+
+                <img
+                    alt={product.name}
+                    src={image}
+                    className="w-full h-72 object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                {
+                    product.oldPrice > product.price && (
+                        <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                            SALE
+                        </div>
+                    )
+                }
+
+            </div>
+            
+            <div className="p-4 flex flex-col flex-1">
+
+                <h2 className="text-lg font-semibold text-gray-800 line-clamp-2 min-h-[56px] group-hover:text-blue-600 transition">
+                    {product.name}
+                </h2>
+
+                <div className="flex items-center gap-3 mt-3">
+
+                    <span className="text-red-500 text-2xl font-bold">
+                        {Number(product.price).toLocaleString()}đ
+                    </span>
+
+                    {
+                        product.oldPrice && (
+                            <span className="line-through text-gray-400 text-sm">
+                                {Number(product.oldPrice).toLocaleString()}đ
+                            </span>
+                        )
+                    }
+
                 </div>
 
-                {/* RIGHT */}
-                <div className="flex items-center gap-4">
-                    {auth?.isAuthenticated ? (
-                        <div className="flex items-center gap-3">
-                            <Link to="/profile" className="flex items-center gap-2 font-medium text-gray-700 hover:text-blue-600">
-                                <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                                    <UserOutlined />
-                                </div>
-                                <span className="hidden md:block">{auth?.user?.name}</span>
-                            </Link>
-                            <button
-                                onClick={logout}
-                                className="px-4 py-2 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition cursor-pointer"
-                            >
-                                Logout
-                            </button>
-                        </div>
-                    ) : (
-                        <Link to="/login" className="px-5 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition">
-                            Login
-                        </Link>
-                    )}
+                <div className="mt-3 flex items-center justify-between text-sm text-gray-500">
+
+                    <span>
+                        Sold: {product.sold || 0}
+                    </span>
+
+                    <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition">
+                        <ShoppingCartOutlined />
+                    </div>
+
                 </div>
+
             </div>
-        </header>
+
+        </Link>
     );
 };
 
-export default Header;
+export default ProductCard;

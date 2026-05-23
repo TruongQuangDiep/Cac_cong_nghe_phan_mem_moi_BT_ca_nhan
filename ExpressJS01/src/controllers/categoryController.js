@@ -6,7 +6,6 @@ import {
 }
 from "../services/categoryService.js";
 
-// ================= GET =================
 export const getCategories = async (req, res) => {
 
     const data =
@@ -15,7 +14,6 @@ export const getCategories = async (req, res) => {
     return res.status(200).json(data);
 };
 
-// ================= CREATE =================
 export const createCategory = async (req, res) => {
 
     try {
@@ -36,7 +34,6 @@ export const createCategory = async (req, res) => {
     }
 };
 
-// ================= UPDATE =================
 export const updateCategory = async (req, res) => {
 
     try {
@@ -60,7 +57,6 @@ export const updateCategory = async (req, res) => {
     }
 };
 
-// ================= DELETE =================
 export const deleteCategory = async (req, res) => {
 
     try {

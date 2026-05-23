@@ -8,88 +8,107 @@ const saltRounds = 10;
 
 export const createUserService = async (name, email, password) => {
     try {
-        // 1. Kiểm tra xem user đã tồn tại chưa
-        const user = await User.findOne({ email: email });
-        if (user) {
-            console.log(`>>> user exist, chọn 1 email khác: ${email}`);
-            return null;
+        const userExist = await User.findOne({ email: email });
+        if (userExist) {
+            return { errCode: 1, message: "Email này đã tồn tại trên hệ thống!" };
         }
 
-        // 2. Hash (mã hóa) mật khẩu
         const hashPassword = await bcrypt.hash(password, saltRounds);
+        // Sinh ngẫu nhiên mã OTP kích hoạt tài khoản
+        const registerOtp = Math.floor(100000 + Math.random() * 900000).toString();
 
-        // 3. Lưu user vào database
         let result = await User.create({
             name: name,
             email: email,
             password: hashPassword,
-            role: "User"
+            role: "User",
+            otpCode: registerOtp,
+            otpExpires: Date.now() + 300000, // Mã hết hạn sau 5 phút
+            isActivated: false 
         });
 
-        return result;
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Kích hoạt tài khoản DShop mới',
+            html: `<h2>Chào mừng bạn đến với DShop!</h2>
+                   <p>Mã OTP kích hoạt tài khoản của bạn là:</p>
+                   <h1>${registerOtp}</h1>
+                   <p>Mã có hiệu lực trong vòng 5 phút.</p>`
+        });
 
+        return { errCode: 0, message: "Đăng ký thành công! Hãy kiểm tra hòm thư email để nhận mã OTP kích hoạt." };
     } catch (error) {
-        console.log(error);
-        return null;
+        console.log("🔥 LỖI GỬI MAIL THỰC SỰ LÀ: ", error);
+        return { errCode: -1, message: "Lỗi hệ thống không thể gửi email OTP!" };
     }
 }
 
-export const loginService = async (email1, password) => {
+export const verifyRegisterOTPService = async (email, otp) => {
     try {
-        // 1. Tìm user theo email
-        const user = await User.findOne({ email: email1 });
-        if (user) {
-            // 2. So sánh mật khẩu
-            const isMatchPassword = await bcrypt.compare(password, user.password);
-            if (!isMatchPassword) {
-                return {
-                    EC: 2,
-                    EM: "Email/Password không hợp lệ"
-                };
-            } else {
-                // 3. Tạo access token (JWT)
-                const payload = {
-                    email: user.email,
-                    name: user.name,
-                    role: user.role,
-                    avatar: user.avatar
-                };
+        const user = await User.findOne({
+            email,
+            otpCode: otp,
+            otpExpires: { $gt: Date.now() }
+        });
 
-                const access_token = jwt.sign(
-                    payload,
-                    process.env.JWT_SECRET,
-                    {
-                        expiresIn: process.env.JWT_EXPIRE
-                    }
-                );
-
-                return {
-                    EC: 0,
-                    access_token,
-                    user: {
-                        email: user.email,
-                        name: user.name,
-                        role: user.role,
-                        avatar: user.avatar
-                    }
-                };
-            }
-        } else {
-            return {
-                EC: 1,
-                EM: "Email/Password không hợp lệ"
-            };
+        if (!user) {
+            return { errCode: 1, message: "Mã kích hoạt OTP không hợp lệ hoặc đã hết hạn!" };
         }
 
+        user.isActivated = true; // Mở khóa tài khoản thành công!
+        user.otpCode = null;
+        user.otpExpires = null;
+        await user.save();
+
+        return { errCode: 0, message: "Kích hoạt tài khoản thành công! Bây giờ bạn đã có thể đăng nhập." };
     } catch (error) {
-        console.log(error);
-        return null;
+        return { errCode: -1, message: "Lỗi server!" };
+    }
+}
+
+export const loginService = async (email, password) => {
+    try {
+        const user = await User.findOne({ email: email });
+        if (!user) {
+            return { errCode: 1, message: "Tài khoản hoặc mật khẩu không chính xác!" };
+        }
+
+        if (user.isActivated === false) {
+            return { errCode: 3, message: "Tài khoản của bạn chưa được kích hoạt bằng mã OTP gửi qua email!" };
+        }
+
+        const isMatchPassword = await bcrypt.compare(password, user.password);
+        if (!isMatchPassword) {
+            return { errCode: 1, message: "Tài khoản hoặc mật khẩu không chính xác!" };
+        }
+
+        const payload = {
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            avatar: user.avatar
+        };
+
+        const access_token = jwt.sign(payload, process.env.JWT_SECRET, {
+            expiresIn: process.env.JWT_EXPIRE
+        });
+
+        const redirectUrl = user.role === "Admin" ? "/admin/profile" : "/user/profile";
+
+        return {
+            errCode: 0,
+            access_token,
+            redirectUrl, 
+            user: payload
+        };
+    } catch (error) {
+        return { errCode: -1, message: "Lỗi xử lý server!" };
     }
 }
 
 export const getUserService = async () => {
     try {
-        // Lấy tất cả user nhưng loại trừ (select "-") trường password để bảo mật
         let result = await User.find({}).select("-password");
         return result;
     } catch (error) {
@@ -111,20 +130,16 @@ export const sendOTPtoEmail = async (email) => {
             };
         }
 
-        // Tạo OTP 6 số
         const otp = Math.floor(
             100000 + Math.random() * 900000
         ).toString();
 
-        // Lưu OTP
         user.otpCode = otp;
 
-        // Hết hạn sau 5 phút
         user.otpExpires = Date.now() + 300000;
 
         await user.save();
 
-        // Gửi mail
         await transporter.sendMail({
 
             from: process.env.EMAIL_USER,
@@ -172,7 +187,6 @@ export const resetPassword = async (data) => {
             };
         }
 
-        // Hash password mới
         const hashPassword = await bcrypt.hash(
             data.newPassword,
             saltRounds
@@ -180,7 +194,6 @@ export const resetPassword = async (data) => {
 
         user.password = hashPassword;
 
-        // Xóa OTP
         user.otpCode = null;
         user.otpExpires = null;
 
@@ -227,7 +240,6 @@ export const verifyForgotPasswordOTP = async (data) => {
             otpExpires: { $gt: Date.now() }
         });
 
-        // OTP sai hoặc hết hạn
         if (!user) {
 
             return {
@@ -271,19 +283,16 @@ export const updateProfileService = async (
             };
         }
 
-        // update fullName
         if (data.name) {
             user.name = data.name;
         }
 
-        // update avatar
         if (data.avatar) {
             user.avatar = data.avatar;
         }
 
         await user.save();
 
-        // Tạo token mới
         const payload = {
             email: user.email,
             name: user.name,

@@ -1,209 +1,67 @@
 import React from 'react';
-import {
-    Button,
-    Col,
-    Divider,
-    Form,
-    Input,
-    notification,
-    Row
-} from 'antd';
-
+import { Button, Divider, Form, Input, notification } from 'antd';
 import { createUserApi } from '../util/api';
-
-import {
-    Link,
-    useNavigate
-} from 'react-router-dom';
-
-import {
-    ArrowLeftOutlined
-} from '@ant-design/icons';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 
 const RegisterPage = () => {
-
     const navigate = useNavigate();
 
     const onFinish = async (values) => {
+        const { name, email, password } = values;
+        const res = await createUserApi(name, email, password);
 
-        const {
-            name,
-            email,
-            password
-        } = values;
-
-        const res =
-            await createUserApi(
-                name,
-                email,
-                password
-            );
-
-        if (res && res._id) {
-
+        if (res && res.errCode === 0) {
             notification.success({
-                message: "CREATE USER",
-                description:
-                    "Tạo tài khoản thành công!"
+                message: "ĐĂNG KÝ TÀI KHOẢN",
+                description: res.message
             });
 
-            navigate("/login");
+            navigate("/verify-otp", { state: { email: email, type: "register" } });
 
         } else {
-
             notification.error({
-                message: "CREATE USER",
-                description:
-                    res?.message ||
-                    "Có lỗi xảy ra"
+                message: "ĐĂNG KÝ THẤT BẠI",
+                description: res?.message || "Có lỗi xảy ra vui lòng thử lại!"
             });
         }
     };
 
     return (
-
-        <div
-            className="
-                min-h-screen
-                flex
-                items-center
-                justify-center
-                bg-gray-100
-                px-4
-            "
-        >
-
-            <div
-                className="
-                    w-full
-                    max-w-md
-                    bg-white
-                    rounded-2xl
-                    shadow-xl
-                    p-8
-                "
-            >
-
-                <h1
-                    className="
-                        text-3xl
-                        font-bold
-                        text-center
-                        mb-8
-                    "
-                >
-                    Đăng Ký
-                </h1>
-
-                <Form
-                    layout="vertical"
-                    onFinish={onFinish}
-                >
-
-                    <Form.Item
-                        label="Email"
-                        name="email"
-                        rules={[
-                            {
-                                required: true,
-                                message:
-                                    "Please input your email!"
-                            }
-                        ]}
-                    >
-                        <Input
-                            size="large"
-                            placeholder="Enter email"
-                        />
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+            <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
+                <h1 className="text-3xl font-bold text-center mb-8">Đăng Ký</h1>
+                
+                <Form layout="vertical" onFinish={onFinish}>
+                    <Form.Item label="Email" name="email" rules={[{ required: true, message: "Please input your email!" }]}>
+                        <Input size="large" placeholder="Enter email" />
                     </Form.Item>
 
-                    <Form.Item
-                        label="Password"
-                        name="password"
-                        rules={[
-                            {
-                                required: true,
-                                message:
-                                    "Please input your password!"
-                            }
-                        ]}
-                    >
-                        <Input.Password
-                            size="large"
-                            placeholder="Enter password"
-                        />
+                    <Form.Item label="Password" name="password" rules={[{ required: true, message: "Please input your password!" }]}>
+                        <Input.Password size="large" placeholder="Enter password" />
                     </Form.Item>
 
-                    <Form.Item
-                        label="Full Name"
-                        name="name"
-                        rules={[
-                            {
-                                required: true,
-                                message:
-                                    "Please input your name!"
-                            }
-                        ]}
-                    >
-                        <Input
-                            size="large"
-                            placeholder="Enter full name"
-                        />
+                    <Form.Item label="Full Name" name="name" rules={[{ required: true, message: "Please input your name!" }]}>
+                        <Input size="large" placeholder="Enter full name" />
                     </Form.Item>
 
-                    <Button
-                        type="primary"
-                        htmlType="submit"
-                        size="large"
-                        block
-                        className="!h-11"
-                    >
+                    <Button type="primary" htmlType="submit" size="large" block className="!h-11">
                         Register
                     </Button>
-
                 </Form>
 
                 <Divider />
 
-                <div
-                    className="
-                        text-center
-                        space-y-3
-                    "
-                >
-
+                <div className="text-center space-y-3">
                     <div>
                         Đã có tài khoản?{" "}
-
-                        <Link
-                            to="/login"
-                            className="
-                                text-blue-500
-                                font-medium
-                            "
-                        >
-                            Đăng nhập
-                        </Link>
+                        <Link to="/login" className="text-blue-500 font-medium">Đăng nhập</Link>
                     </div>
-
-                    <Link
-                        to="/"
-                        className="
-                            inline-flex
-                            items-center
-                            gap-1
-                            text-gray-500
-                            hover:text-black
-                        "
-                    >
-                        <ArrowLeftOutlined />
-                        Quay lại trang chủ
+                    <Link to="/" className="inline-flex items-center gap-1 text-gray-500 hover:text-black">
+                        <ArrowLeftOutlined /> Quay lại trang chủ
                     </Link>
-
                 </div>
-
             </div>
-
         </div>
     );
 };

@@ -4,27 +4,34 @@ export const getProductsService = async (query) => {
     try {
         let filter = {};
 
-        // 1. SEARCH & CATEGORY
         if (query.search) filter.name = { $regex: query.search, $options: "i" };
         if (query.category) filter.category = query.category;
 
-        // 2. LỌC KHOẢNG GIÁ
         if (query.minPrice || query.maxPrice) {
             filter.price = {};
-            if (query.minPrice) filter.price.$gte = Number(query.minPrice);
-            if (query.maxPrice) filter.price.$lte = Number(query.maxPrice);
+
+            if (query.minPrice && query.minPrice !== "null" && query.minPrice !== "undefined" && query.minPrice !== "") {
+                const min = Number(query.minPrice);
+                if (!isNaN(min)) filter.price.$gte = min;
+            }
+            
+            if (query.maxPrice && query.maxPrice !== "null" && query.maxPrice !== "undefined" && query.maxPrice !== "") {
+                const max = Number(query.maxPrice);
+                if (!isNaN(max)) filter.price.$lte = max;
+            }
+
+            if (Object.keys(filter.price).length === 0) {
+                delete filter.price;
+            }
         }
 
-        // 3. SẮP XẾP (Thêm Most Viewed)
         let sortBy = { createdAt: -1 }; 
         if (query.sort === 'price_asc') sortBy = { price: 1 };
         if (query.sort === 'price_desc') sortBy = { price: -1 };
         if (query.sort === 'oldest') sortBy = { createdAt: 1 };
         if (query.sort === 'bestseller') sortBy = { sold: -1 };
-        if (query.sort === 'most_viewed') sortBy = { views: -1 }; // 🔥 Thêm sắp xếp theo views
+        if (query.sort === 'most_viewed') sortBy = { views: -1 }; 
 
-        // 4. PHÂN TRANG & GIỚI HẠN (PAGINATION & LIMIT)
-        // Nếu API có truyền limit thì lấy đúng số limit đó (dùng cho Top 10), nếu không thì mặc định 12 sản phẩm/trang
         const limit = query.limit ? parseInt(query.limit) : 12; 
         const page = query.page ? parseInt(query.page) : 1;
         const skip = (page - 1) * limit;
@@ -32,13 +39,11 @@ export const getProductsService = async (query) => {
         const products = await Product.find(filter)
             .populate("category")
             .sort(sortBy)
-            .skip(skip)   // Bỏ qua các sản phẩm của trang trước
-            .limit(limit); // Lấy đúng số lượng của trang hiện tại
+            .skip(skip)  
+            .limit(limit);
 
-        // Đếm tổng số sản phẩm thỏa mãn điều kiện để Frontend biết đường vẽ mấy cái nút trang 1, 2, 3...
         const total = await Product.countDocuments(filter);
 
-        // 🔥 TRẢ VỀ DẠNG OBJECT CÓ CHỨA THÔNG TIN PHÂN TRANG
         return {
             data: products,
             totalItems: total,
@@ -52,11 +57,14 @@ export const getProductsService = async (query) => {
     }
 };
 
-// ================= GET DETAIL =================
 export const getProductDetailService = async (id) => {
     try {
-        // 🔥 ĐÃ SỬA: Thêm .populate("category") vào cuối lệnh findById
-        const product = await Product.findById(id).populate("category");
+
+        const product = await Product.findByIdAndUpdate(
+            id,
+            { $inc: { views: 1 } }, 
+            { new: true } 
+        ).populate("category");
 
         return product;
     } catch (error) {
@@ -65,7 +73,6 @@ export const getProductDetailService = async (id) => {
     }
 };
 
-// ================= CREATE =================
 export const createProductService = async (data) => {
     try {
         const product = await Product.create(data);
@@ -83,10 +90,8 @@ export const createProductService = async (data) => {
     }
 };
 
-// ================= UPDATE =================
 export const updateProductService = async (id, data) => {
     try {
-        // 🔥 ĐÃ SỬA: Thêm .populate("category") vào sau hàm findByIdAndUpdate để khi update xong nó trả về data kèm danh mục mới luôn
         const product = await Product.findByIdAndUpdate(
             id,
             data,
@@ -109,7 +114,6 @@ export const updateProductService = async (id, data) => {
     }
 };
 
-// ================= DELETE =================
 export const deleteProductService = async (id) => {
     try {
         await Product.findByIdAndDelete(id);

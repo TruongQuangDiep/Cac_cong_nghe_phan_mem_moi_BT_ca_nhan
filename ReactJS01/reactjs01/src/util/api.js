@@ -1,20 +1,21 @@
 import axios from "./axios.customize";
 
-// Hàm đăng ký người dùng mới
 const createUserApi = (name, email, password) => {
     const URL_API = "/v1/api/register";
     const data = { name, email, password };
     return axios.post(URL_API, data);
 }
 
-// Hàm đăng nhập
+const verifyRegisterOtpApi = (email, otp) => {
+    return axios.post("/v1/api/verify-register-otp", { email, otp });
+};
+
 const loginApi = (email, password) => {
     const URL_API = "/v1/api/login";
     const data = { email, password };
     return axios.post(URL_API, data);
 }
 
-// Hàm lấy thông tin người dùng (Cần Token mới lấy được)
 const getUserApi = () => {
     const URL_API = "/v1/api/user";
     return axios.get(URL_API);
@@ -142,9 +143,43 @@ const deleteCategoryApi = (id) => {
     return axios.delete(`/v1/api/categories/${id}`);
 };
 
+const addToCartApi = (productId, quantity) => {
+    return axios.post("/v1/api/cart/add", { productId, quantity });
+};
+
+const getCartApi = () => {
+    return axios.get("/v1/api/cart");
+};
+
+const updateCartApi = (productId, quantity) => {
+    return axios.put("/v1/api/cart/update", { productId, quantity });
+};
+
+const removeCartItemApi = (productId) => {
+    return axios.post("/v1/api/cart/remove", { productId });
+};
+
+const createOrderApi = (orderData) => {
+    return axios.post("/v1/api/order/create", orderData);
+};
+
+const getOrderHistoryApi = () => {
+    return axios.get("/v1/api/order/history");
+};
+const cancelOrderApi = (orderId) => {
+    return axios.post("/v1/api/order/cancel", { orderId });
+};
+const getAdminOrdersApi = () => {
+    return axios.get("/v1/api/admin/orders");
+};
+const updateOrderStatusApi = (orderId, status) => {
+    return axios.put("/v1/api/admin/order/update-status", { orderId, status });
+};
+
 export {
     createUserApi,
     loginApi,
+    verifyRegisterOtpApi,
     getUserApi,
     deleteProductApi,
     updateProductApi,
@@ -159,5 +194,14 @@ export {
     getCategoriesApi,
     createCategoryApi,
     updateCategoryApi,
-    deleteCategoryApi
-}
+    deleteCategoryApi,
+    addToCartApi,
+    getCartApi,
+    updateCartApi,
+    removeCartItemApi,
+    createOrderApi,
+    getOrderHistoryApi,
+    cancelOrderApi,
+    getAdminOrdersApi,
+    updateOrderStatusApi
+} 

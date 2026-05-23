@@ -8,8 +8,10 @@ import {
   RouterProvider,
 } from "react-router-dom";
 
-// 1. IMPORT THÊM CONFIGPROVIDER CỦA ANT DESIGN VÀO ĐÂY
 import { ConfigProvider } from "antd";
+
+import { Provider } from 'react-redux';
+import { store } from './redux/store.js';
 
 import RegisterPage from './pages/register.jsx';
 import UserPage from './pages/user.jsx';
@@ -25,6 +27,10 @@ import AdminProductPage from './pages/adminProduct';
 import CreateProductPage from './pages/createProduct';
 import EditProductPage from './pages/editProduct';
 import AdminCategoryPage from "./pages/adminCategoryPage.jsx";
+import CartPage from './pages/CartPage.jsx'; 
+import CheckoutPage from './pages/CheckoutPage.jsx';
+import AdminOrderPage from './pages/adminOrderPage.jsx';
+import OrderHistoryPage from './pages/OrderHistoryPage.jsx';
 
 const router = createBrowserRouter([
   {
@@ -44,6 +50,10 @@ const router = createBrowserRouter([
         element: <ProfilePage />
       },
       {
+        path: "cart",
+        element: <CartPage />
+      },
+      {
         path: "product/:id",
         element: <ProductDetailPage />
       },
@@ -58,6 +68,18 @@ const router = createBrowserRouter([
       {
         path: "admin/products/edit/:id",
         element: <EditProductPage />
+      },
+      {
+        path: "checkout",
+        element: <CheckoutPage />
+      },
+      {
+        path: "admin/orders",
+        element: <AdminOrderPage />
+      },
+      {
+        path: "order-history",
+        element: <OrderHistoryPage />
       },
       {
         path: "admin/categories",
@@ -91,45 +113,27 @@ ReactDOM.createRoot(
   document.getElementById('root')
 ).render(
   <React.StrictMode>
-    <AuthWrapper>
-      
-      {/* 2. BỌC CONFIG PROVIDER QUANH ROUTER PROVIDER */}
+    {/* 🔥 ĐÃ THAY THẾ: Bọc Provider Redux lên đầu hệ thống để đáp ứng đề bài của Thầy */}
+    <Provider store={store}>
       <ConfigProvider
         theme={{
           token: {
-            colorPrimary: '#4f46e5', // Xanh Indigo sang trọng
+            colorPrimary: '#4f46e5', 
             borderRadius: 8,
             fontFamily: 'Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
-            
-            // 1. CHỈNH VIỀN ĐẬM HƠN MỘT CHÚT (Màu Gray-300)
             colorBorder: '#d1d5db', 
-            
-            // 2. Chỉnh màu chữ trong ô input đậm hơn để dễ đọc
             colorText: '#1f2937', 
           },
           components: {
-            Input: {
-              controlHeight: 44, // Tăng thêm chút độ cao cho form bề thế
-              // 3. HIỆU ỨNG GLOW XỊN SÒ KHI CLICK VÀO Ô NHẬP LIỆU
-              activeShadow: '0 0 0 3px rgba(79, 70, 229, 0.15)', 
-            },
-            InputNumber: {
-              controlHeight: 44,
-              activeShadow: '0 0 0 3px rgba(79, 70, 229, 0.15)',
-            },
-            Select: {
-              controlHeight: 44,
-            },
-            Button: {
-              controlHeight: 44,
-              fontWeight: 600, // In đậm chữ ở nút bấm
-            }
+            Input: { controlHeight: 44, activeShadow: '0 0 0 3px rgba(79, 70, 229, 0.15)' },
+            InputNumber: { controlHeight: 44, activeShadow: '0 0 0 3px rgba(79, 70, 229, 0.15)' },
+            Select: { controlHeight: 44 },
+            Button: { controlHeight: 44, fontWeight: 600 }
           }
         }}
       >
         <RouterProvider router={router} />
       </ConfigProvider>
-      
-    </AuthWrapper>
+    </Provider>
   </React.StrictMode>,
 )

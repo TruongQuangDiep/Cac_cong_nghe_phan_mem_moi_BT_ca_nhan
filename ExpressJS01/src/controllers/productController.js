@@ -8,24 +8,20 @@ import {
     deleteProductService
 } from "../services/productService.js";
 
-// ================= GET PRODUCTS =================
 export const getProducts = async (req, res) => {
     const data = await getProductsService(req.query);
     return res.status(200).json(data);
 };
 
-// ================= GET DETAIL =================
 export const getProductDetail = async (req, res) => {
     const data = await getProductDetailService(req.params.id);
     return res.status(200).json(data);
 };
 
-// ================= CREATE =================
 export const createProduct = async (req, res) => {
     try {
         const data = req.body;
 
-        // 🚨 TƯỜNG LỬA BẢO VỆ: Chặn số âm trước khi xử lý
         if (Number(data.price) < 0 || Number(data.stock) < 0) {
             return res.status(200).json({
                 errCode: 1,
@@ -57,12 +53,10 @@ export const createProduct = async (req, res) => {
     }
 };
 
-// ================= UPDATE =================
 export const updateProduct = async (req, res) => {
     try {
-        const dataInput = req.body; // Lấy dữ liệu gửi lên
+        const dataInput = req.body; 
 
-        // 🚨 TƯỜNG LỬA BẢO VỆ: Chặn số âm trước khi xử lý
         if (Number(dataInput.price) < 0 || Number(dataInput.stock) < 0) {
             return res.status(200).json({
                 errCode: 1,
@@ -95,7 +89,6 @@ export const updateProduct = async (req, res) => {
             ...newImages
         ];
 
-        // DELETE REMOVED IMAGE
         oldProduct.images?.forEach((img) => {
             if (!finalImages.includes(img)) {
                 const filePath = path.join(
@@ -128,12 +121,10 @@ export const updateProduct = async (req, res) => {
     }
 };
 
-// ================= DELETE =================
 export const deleteProduct = async (req, res) => {
     try {
         const product = await getProductDetailService(req.params.id);
 
-        // DELETE IMAGE FILE
         product.images?.forEach((img) => {
             const filePath = path.join(
                 process.cwd(),

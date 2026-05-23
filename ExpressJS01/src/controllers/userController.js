@@ -1,5 +1,7 @@
+import { validationResult } from 'express-validator';
 import {
     createUserService,
+    verifyRegisterOTPService,
     loginService,
     getUserService,
     sendOTPtoEmail,
@@ -10,13 +12,27 @@ import {
 from '../services/userService.js';
 
 export const createUser = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errCode: 1, message: errors.array()[0].msg });
+    }
+
     const { name, email, password } = req.body;
     const data = await createUserService(name, email, password);
     return res.status(200).json(data);
 }
 
+export const handleVerifyRegisterOTP = async (req, res) => {
+    const { email, otp } = req.body;
+    const data = await verifyRegisterOTPService(email, otp);
+    return res.status(200).json(data);
+}
+
 export const handleLogin = async (req, res) => {
-    console.log(">>> Check body login: ", req.body);
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errCode: 1, message: errors.array()[0].msg });
+    }
     const { email, password } = req.body;
     const data = await loginService(email, password);
     return res.status(200).json(data);
@@ -32,52 +48,36 @@ export const getAccount = async (req, res) => {
 }
 
 export const handleForgotPassword = async (req, res) => {
-
     let email = req.body.email;
-
     let response = await sendOTPtoEmail(email);
-
     return res.status(200).json(response);
 }
 
 export const handleVerifyForgotPasswordOTP = async (req, res) => {
-
     let response = await verifyForgotPasswordOTP(req.body);
-
     return res.status(200).json(response);
 }
 
 export const handleResetPassword = async (req, res) => {
-
     let response = await resetPassword(req.body);
-
     return res.status(200).json(response);
 }
 
 export const handleUpdateProfile = async (req, res) => {
-
     try {
-
         let data = req.body;
-
         if (req.file) {
-
             data.avatar =
                 `/images/avatar/${req.file.filename}`;
         }
-
         const response =
             await updateProfileService(
                 req.user,
                 data
             );
-
         return res.status(200).json(response);
-
     } catch (error) {
-
         console.log(error);
-
         return res.status(500).json({
             message: 'Lỗi server!'
         });

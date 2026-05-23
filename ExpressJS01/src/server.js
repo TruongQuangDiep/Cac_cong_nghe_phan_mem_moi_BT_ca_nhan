@@ -9,6 +9,8 @@ import path from 'path';
 
 import productApi from './routes/productApi.js';
 import categoryApi from './routes/categoryApi.js';
+import cartApi from './routes/cartApi.js';
+import orderApi from './routes/orderApi.js';
 
 const app = express();
 
@@ -24,6 +26,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/v1/api/', productApi);
 
 app.use('/v1/api/', categoryApi);
+
+app.use('/v1/api/', cartApi);
+
+app.use('/v1/api/', orderApi);
 
 // ================= VIEW ENGINE =================
 configViewEngine(app);

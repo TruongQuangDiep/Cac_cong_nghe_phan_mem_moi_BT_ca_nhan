@@ -1,31 +1,40 @@
 import { Outlet } from "react-router-dom";
 import Header from "./components/layout/header";
 import axios from "./util/axios.customize";
-import { useContext, useEffect } from "react";
-import { AuthContext } from "./components/context/auth.context";
+import { useEffect, useState } from "react"; 
+import { useDispatch } from "react-redux"; 
+import { setAuthData } from "./redux/authSlice"; 
 
 function App() {
-    const { setAuth, appLoading, setAppLoading } = useContext(AuthContext);
+    
+    const dispatch = useDispatch();
+    const [appLoading, setAppLoading] = useState(true);
 
     useEffect(() => {
         const fetchAccount = async () => {
-            setAppLoading(true);
-            const res = await axios.get(`/v1/api/account`);
-            if (res && !res.message) {
-                setAuth({
-                    isAuthenticated: true,
-                    user: {
-                        email: res.email,
-                        name: res.name,
-                        role: res.role,
-                        avatar: res.avatar
-                    }
-                });
+            try {
+                const res = await axios.get(`/v1/api/account`);
+
+                if (res && !res.message) {
+                    dispatch(setAuthData({
+                        isAuthenticated: true,
+                        user: {
+                            email: res.email,
+                            name: res.name,
+                            role: res.role,
+                            avatar: res.avatar
+                        }
+                    }));
+                }
+            } catch (error) {
+                console.log("Lỗi tự động đăng nhập ngầm:", error);
+            } finally {
+                setAppLoading(false);
             }
-            setAppLoading(false);
         };
+        
         fetchAccount();
-    }, []);
+    }, [dispatch]);
 
     if (appLoading) {
         return (
@@ -36,11 +45,8 @@ function App() {
     }
 
     return (
-        // Đã gỡ bỏ inline style, chỉ xài Tailwind cơ bản
         <div className="min-h-screen w-full bg-gray-100 flex flex-col overflow-x-hidden">
             <Header />
-            
-            {/* THÊM pt-16 vào đây để nội dung không bị header che mất */}
             <main className="w-full flex-grow pt-16">
                 <Outlet />
             </main>

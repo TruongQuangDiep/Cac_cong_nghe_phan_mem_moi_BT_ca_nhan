@@ -25,10 +25,9 @@ const EditProductPage = () => {
     const [loading, setLoading] = useState(false);
     const [categories, setCategories] = useState([]);
 
-    // ================= LOAD =================
     useEffect(() => {
         const fetchData = async () => {
-            // load product
+
             const product = await getProductDetailApi(id);
             if (product) {
                 form.setFieldsValue({
@@ -48,7 +47,6 @@ const EditProductPage = () => {
                 setFileList(oldImages);
             }
 
-            // load categories
             const categoryRes = await getCategoriesApi();
             if (Array.isArray(categoryRes)) {
                 setCategories(categoryRes);
@@ -58,7 +56,6 @@ const EditProductPage = () => {
         fetchData();
     }, [id, form]);
 
-    // ================= UPLOAD =================
     const beforeUpload = (file) => {
         const preview = URL.createObjectURL(file);
         setFileList((prev) => [
@@ -74,12 +71,10 @@ const EditProductPage = () => {
         return false;
     };
 
-    // ================= REMOVE =================
     const handleRemove = (file) => {
         setFileList((prev) => prev.filter(item => item.uid !== file.uid));
     };
 
-    // ================= SUBMIT =================
     const onFinish = async (values) => {
         try {
             setLoading(true);
@@ -98,14 +93,12 @@ const EditProductPage = () => {
                 formData.append("description", values.description);
             }
 
-            // giữ ảnh cũ
             const oldImages = fileList
                 .filter(item => item.oldImage)
                 .map(item => item.oldImage);
 
             formData.append("oldImages", JSON.stringify(oldImages));
 
-            // thêm ảnh mới
             fileList.forEach((item) => {
                 if (item.originFileObj) {
                     formData.append("images", item.originFileObj);
@@ -167,7 +160,7 @@ const EditProductPage = () => {
                             name="price"
                             rules={[
                                 { required: true, message: 'Vui lòng nhập giá!' },
-                                // Thêm rule chặn số âm báo lỗi đỏ:
+
                                 { type: 'number', min: 0, message: 'Giá không được là số âm!' }
                             ]}
                         >
@@ -179,7 +172,7 @@ const EditProductPage = () => {
                             label={<span className="font-medium text-gray-700">Old Price (Optional)</span>}
                             name="oldPrice"
                             rules={[
-                                // Không có required, chỉ có chặn số âm:
+
                                 { type: 'number', min: 0, message: 'Giá cũ không được là số âm!' }
                             ]}
                         >
@@ -192,7 +185,7 @@ const EditProductPage = () => {
                             name="stock"
                             rules={[
                                     { required: true, message: 'Vui lòng nhập số lượng!' },
-                                    // Thêm rule chặn số âm báo lỗi đỏ:
+
                                     { type: 'number', min: 0, message: 'Số lượng kho không được âm!' }
                                 ]}
                             >

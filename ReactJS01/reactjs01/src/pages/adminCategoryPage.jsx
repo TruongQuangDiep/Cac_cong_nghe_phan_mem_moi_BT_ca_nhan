@@ -78,7 +78,6 @@ const AdminCategoryPage = () => {
     ];
 
     return (
-        // Đã sửa class bọc ngoài cùng
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
             <div className="mb-5 flex items-center justify-between">
                 <h1 className="text-2xl font-bold">Admin Categories</h1>
@@ -92,7 +91,7 @@ const AdminCategoryPage = () => {
                     columns={columns}
                     rowKey="_id"
                     pagination={false}
-                    scroll={{ x: 'max-content' }} // Bắt AntD tự quản lý thanh cuộn của chính nó
+                    scroll={{ x: 'max-content' }} 
                 />
             </div>
 

@@ -13,13 +13,11 @@ from "../controllers/categoryController.js";
 
 const routerCategory = express.Router();
 
-// ================= PUBLIC =================
 routerCategory.get(
     "/categories",
     getCategories
 );
 
-// ================= ADMIN =================
 routerCategory.post(
     "/categories",
     auth,
