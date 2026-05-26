@@ -1,4 +1,6 @@
 import { validationResult } from 'express-validator';
+import fs from 'fs';   
+import path from 'path'; 
 import {
     createUserService,
     verifyRegisterOTPService,
@@ -8,8 +10,7 @@ import {
     verifyForgotPasswordOTP,
     resetPassword,
     updateProfileService
-}
-from '../services/userService.js';
+} from '../services/userService.js';
 
 export const createUser = async (req, res) => {
     const errors = validationResult(req);
@@ -63,18 +64,37 @@ export const handleResetPassword = async (req, res) => {
     return res.status(200).json(response);
 }
 
+// 🔥 ĐÃ NÂNG CẤP: HÀM CẬP NHẬT PROFILE TỰ ĐỘNG QUÉT DỌN ẢNH AVATAR CŨ
 export const handleUpdateProfile = async (req, res) => {
     try {
         let data = req.body;
+        
+        // Kiểm tra xem người dùng có upload ảnh mới lên hay không
         if (req.file) {
-            data.avatar =
-                `/images/avatar/${req.file.filename}`;
+ 
+            const oldAvatarPath = req.user?.avatar;
+            
+            if (oldAvatarPath && !oldAvatarPath.startsWith("http")) {
+                const filePath = path.join(
+                    process.cwd(),
+                    'src/public', // Đường dẫn tới thư mục public dự án của bạn
+                    oldAvatarPath
+                );
+
+                // Nếu ảnh cũ thực sự nằm trên ổ cứng -> Tiến hành xóa ngay lập tức
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
+            }
+
+            // Gán đường dẫn file ảnh mới vào dữ liệu cập nhật
+            data.avatar = `/images/avatar/${req.file.filename}`;
         }
-        const response =
-            await updateProfileService(
-                req.user,
-                data
-            );
+
+        const response = await updateProfileService(
+            req.user,
+            data
+        );
         return res.status(200).json(response);
     } catch (error) {
         console.log(error);

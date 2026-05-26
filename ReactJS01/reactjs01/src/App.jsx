@@ -12,6 +12,13 @@ function App() {
 
     useEffect(() => {
         const fetchAccount = async () => {
+            const accessToken = localStorage.getItem("access_token");
+
+            if (!accessToken) {
+                setAppLoading(false);
+                return;
+            }
+
             try {
                 const res = await axios.get(`/v1/api/account`);
 

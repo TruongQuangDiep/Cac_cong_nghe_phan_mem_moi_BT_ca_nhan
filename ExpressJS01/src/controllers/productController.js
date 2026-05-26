@@ -8,16 +8,19 @@ import {
     deleteProductService
 } from "../services/productService.js";
 
+// ================= GET PRODUCTS =================
 export const getProducts = async (req, res) => {
     const data = await getProductsService(req.query);
     return res.status(200).json(data);
 };
 
+// ================= GET DETAIL =================
 export const getProductDetail = async (req, res) => {
     const data = await getProductDetailService(req.params.id);
     return res.status(200).json(data);
 };
 
+// ================= CREATE =================
 export const createProduct = async (req, res) => {
     try {
         const data = req.body;
@@ -53,6 +56,7 @@ export const createProduct = async (req, res) => {
     }
 };
 
+// ================= UPDATE =================
 export const updateProduct = async (req, res) => {
     try {
         const dataInput = req.body; 
@@ -71,8 +75,16 @@ export const updateProduct = async (req, res) => {
         }
 
         const oldProduct = await getProductDetailService(req.params.id);
-        let oldImages = [];
+        
+        // 🚨 PHÒNG THỦ: Chặn đứng trường hợp truyền ID bậy bạ không có trong DB
+        if (!oldProduct) {
+            return res.status(200).json({
+                errCode: 1,
+                message: "Không tìm thấy sản phẩm cần cập nhật!"
+            });
+        }
 
+        let oldImages = [];
         if (req.body.oldImages) {
             oldImages = JSON.parse(req.body.oldImages);
         }
@@ -121,9 +133,17 @@ export const updateProduct = async (req, res) => {
     }
 };
 
+// ================= DELETE =================
 export const deleteProduct = async (req, res) => {
     try {
         const product = await getProductDetailService(req.params.id);
+
+        if (!product) {
+            return res.status(200).json({
+                errCode: 1,
+                message: "Sản phẩm không tồn tại hoặc đã bị xóa từ trước!"
+            });
+        }
 
         product.images?.forEach((img) => {
             const filePath = path.join(

@@ -19,6 +19,12 @@ const ProfilePage = () => {
 
     useEffect(() => {
         const fetchProfile = async () => {
+            const accessToken = localStorage.getItem("access_token");
+
+            if (!accessToken) {
+                return;
+            }
+
             const res = await getProfileApi();
             if (res) {
                 const user = res;

@@ -26,13 +26,35 @@ const storage = multer.diskStorage({
 
     filename: (req, file, cb) => {
 
-        cb(
-            null,
-            Date.now() + path.extname(file.originalname)
-        );
+        // tạo tên file an toàn hơn
+        const uniqueName =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+
+        cb(null, uniqueName + path.extname(file.originalname));
     }
 });
 
-const upload = multer({ storage });
+const fileFilter = (req, file, cb) => {
+
+    const allowedMimeTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    ];
+
+    if (allowedMimeTypes.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(new Error("Chỉ cho phép upload file ảnh (jpg, png, webp)"), false);
+    }
+};
+
+const upload = multer({
+    storage,
+    fileFilter,
+    limits: {
+        fileSize: 2 * 1024 * 1024 // 2MB
+    }
+});
 
 export default upload;

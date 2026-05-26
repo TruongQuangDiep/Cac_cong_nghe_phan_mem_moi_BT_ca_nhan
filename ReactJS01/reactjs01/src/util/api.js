@@ -85,7 +85,6 @@ const updateProfileApi = (
     );
 };
 
-// 🔥 ĐÃ NÂNG CẤP: Thêm minPrice, maxPrice, sort vào URL API
 const getProductsApi = (
     search = "",
     category = "",

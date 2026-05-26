@@ -4,6 +4,9 @@ import { ShoppingCartOutlined } from "@ant-design/icons";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const ProductCard = ({ product }) => {
+    if (!product || !product._id) {
+        return null;
+    }
 
     const image = product?.images?.[0]
         ? `${BACKEND_URL}${product.images[0]}`
